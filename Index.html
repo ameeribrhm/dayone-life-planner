@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#111827">
+<title>DayOne — Life Planner</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f6f8;
+  color: #111827;
+}
+
+.app {
+  max-width: 600px;
+  margin: auto;
+  min-height: 100vh;
+  padding-bottom: 90px;
+}
+
+header {
+  background: #111827;
+  color: white;
+  padding: 28px 20px 24px;
+  border-radius: 0 0 24px 24px;
+}
+
+header small {
+  opacity: .7;
+}
+
+header h1 {
+  margin: 6px 0;
+  font-size: 30px;
+}
+
+.progress-box {
+  margin-top: 18px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #374151;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #22c55e;
+  width: 0%;
+  transition: .3s;
+}
+
+.progress-text {
+  margin-top: 7px;
+  font-size: 13px;
+  opacity: .8;
+}
+
+main {
+  padding: 18px;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.05);
+}
+
+.card h2 {
+  margin: 0 0 14px;
+  font-size: 19px;
+}
+
+.one-win {
+  border-left: 5px solid #111827;
+}
+
+input, select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 13px;
+  font-size: 15px;
+  background: white;
+}
+
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.primary {
+  background: #111827;
+  color: white;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.task:last-child {
+  border-bottom: 0;
+}
+
+.task input[type="checkbox"],
+.habit input[type="checkbox"] {
+  width: 21px;
+  height: 21px;
+}
+
+.task-info {
+  flex: 1;
+}
+
+.task-title {
+  font-weight: 600;
+}
+
+.completed .task-title {
+  text-decoration: line-through;
+  opacity: .45;
+}
+
+.meta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 3px;
+}
+
+.priority {
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: #eef2ff;
+}
+
+.delete {
+  background: transparent;
+  color: #9ca3af;
+  padding: 5px;
+}
+
+.habit {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.habit:last-child {
+  border-bottom: 0;
+}
+
+.habit-info {
+  flex: 1;
+}
+
+.streak {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.add-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.add-row input {
+  flex: 1;
+}
+
+.tabs {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+}
+
+.tabs button {
+  flex: 1;
+  max-width: 150px;
+  background: white;
+  color: #6b7280;
+  border-radius: 0;
+  padding: 15px 5px;
+}
+
+.tabs button.active {
+  color: #111827;
+  font-weight: 700;
+}
+
+.page {
+  display: none;
+}
+
+.page.active {
+  display: block;
+}
+
+.empty {
+  text-align: center;
+  color: #9ca3af;
+  padding: 15px;
+}
+
+.stat {
+  text-align: center;
+  padding: 15px;
+  background: #f9fafb;
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.timeline {
+  border-left: 2px solid #d1d5db;
+  margin-left: 8px;
+  padding-left: 18px;
+}
+
+.timeline-item {
+  margin-bottom: 18px;
+  position: relative;
+}
+
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -25px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  background: #111827;
+  border-radius: 50%;
+}
+
+.hidden {
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<header>
+  <small id="date"></small>
+  <h1>DayOne</h1>
+  <div>Plan your day. Build your life.</div>
+
+  <div class="progress-box">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">0% complete</div>
+  </div>
+</header>
+
+<main>
+
+<!-- TODAY -->
+<section id="today" class="page active">
+
+  <div class="card one-win">
+    <h2>🏆 Today's One Win</h2>
+    <input id="oneWin" placeholder="What's the one thing that would make today a win?">
+  </div>
+
+  <div class="card">
+    <h2>Tasks</h2>
+    <div id="taskList"></div>
+
+    <div class="add-row">
+      <input id="taskInput" placeholder="Add a task...">
+      <button class="primary" onclick="addTask()">Add</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Habits</h2>
+    <div id="habitList"></div>
+
+    <div class="add-row">
+      <input id="habitInput" placeholder="Add a habit...">
+      <button class="primary" onclick="addHabit()">Add</button>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- PLAN -->
+<section id="plan" class="page">
+
+  <div class="card">
+    <h2>📅 Today's Plan</h2>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <div class="card">
+    <h2>Add Task</h2>
+
+    <input id="planTask" placeholder="Task name">
+
+    <br><br>
+
+    <input id="planTime" type="time">
+
+    <br><br>
+
+    <select id="planPriority">
+      <option value="Must">Must</option>
+      <option value="Should">Should</option>
+      <option value="Could">Could</option>
+    </select>
+
+    <br><br>
+
+    <button class="primary" onclick="addPlannedTask()">
+      Add to plan
+    </button>
+  </div>
+
+</section>
+
+
+<!-- HABITS -->
+<section id="habits" class="page">
+
+  <div class="card">
+    <h2>🌱 Your Habits</h2>
+    <div id="habitPageList"></div>
+  </div>
+
+</section>
+
+
+<!-- PROGRESS -->
+<section id="progress" class="page">
+
+  <div class="card">
+    <h2>📊 Your Progress</h2>
+
+    <div class="stat">
+      <div class="stat-number" id="progressNumber">0%</div>
+      <div>Today's completion</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-number" id="taskCount">0</div>
+      <div>Tasks completed</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-number" id="habitCount">0</div>
+      <div>Habits completed today</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Keep going.</h2>
+    <p>
+      Small completed actions become a better life.
+    </p>
+  </div>
+
+</section>
+
+</main>
+
+
+<nav class="tabs">
+  <button class="active" onclick="showPage('today',this)">Today</button>
+  <button onclick="showPage('plan',this)">Plan</button>
+  <button onclick="showPage('habits',this)">Habits</button>
+  <button onclick="showPage('progress',this)">Progress</button>
+</nav>
+
+</div>
+
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("dayone")) || {
+
+  oneWin: "",
+
+  tasks: [
+    {title:"Morning routine", time:"07:00", priority:"Must", completed:false},
+    {title:"Workout", time:"10:00", priority:"Must", completed:false},
+    {title:"Study / revision", time:"14:00", priority:"Should", completed:false},
+    {title:"Guitar practice", time:"19:00", priority:"Should", completed:false}
+  ],
+
+  habits: [
+    {name:"Exercise", completed:false, streak:0},
+    {name:"Study", completed:false, streak:0},
+    {name:"Guitar", completed:false, streak:0}
+  ]
+
+};
+
+
+function save() {
+  localStorage.setItem("dayone", JSON.stringify(data));
+}
+
+
+function todayDate() {
+
+  const d = new Date();
+
+  return d.toLocaleDateString("en-US", {
+    weekday:"long",
+    month:"long",
+    day:"numeric"
+  });
+
+}
+
+
+document.getElementById("date").textContent = todayDate();
+
+
+function renderTasks() {
+
+  const list = document.getElementById("taskList");
+
+  if (!data.tasks.length) {
+    list.innerHTML = '<div class="empty">No tasks yet.</div>';
+    return;
+  }
+
+  list.innerHTML = data.tasks.map((task,i)=>`
+
+    <div class="task ${task.completed ? 'completed':''}">
+
+      <input
+        type="checkbox"
+        ${task.completed ? 'checked':''}
+        onchange="toggleTask(${i})"
+      >
+
+      <div class="task-info">
+
+        <div class="task-title">${task.title}</div>
+
+        <div class="meta">
+          ${task.time || ''} 
+        </div>
+
+      </div>
+
+      <span class="priority">${task.priority}</span>
+
+      <button class="delete" onclick="deleteTask(${i})">×</button>
+
+    </div>
+
+  `).join("");
+
+}
+
+
+function addTask() {
+
+  const input = document.getElementById("taskInput");
+
+  const title = input.value.trim();
+
+  if (!title) return;
+
+  data.tasks.push({
+    title:title,
+    time:"",
+    priority:"Should",
+    completed:false
+  });
+
+  input.value="";
+
+  save();
+  render();
+
+}
+
+
+function deleteTask(i) {
+
+  data.tasks.splice(i,1);
+
+  save();
+  render();
+
+}
+
+
+function toggleTask(i) {
+
+  data.tasks[i].completed = !data.tasks[i].completed;
+
+  save();
+  render();
+
+}
+
+
+function renderHabits() {
+
+  const list = document.getElementById("habitList");
+
+  list.innerHTML = data.habits.map((habit,i)=>`
+
+    <div class="habit">
+
+      <input
+        type="checkbox"
+        ${habit.completed ? 'checked':''}
+        onchange="toggleHabit(${i})"
+      >
+
+      <div class="habit-info">
+
+        <strong>${habit.name}</strong>
+
+        <div class="streak">
+          🔥 ${habit.streak} day streak
+        </div>
+
+      </div>
+
+    </div>
+
+  `).join("");
+
+}
+
+
+function renderHabitPage() {
+
+  const list = document.getElementById("habitPageList");
+
+  list.innerHTML = data.habits.map((habit,i)=>`
+
+    <div class="habit">
+
+      <input
+        type="checkbox"
+        ${habit.completed ? 'checked':''}
+        onchange="toggleHabit(${i})"
+      >
+
+      <div class="habit-info">
+
+        <strong>${habit.name}</strong>
+
+        <div class="streak">
+          Current streak: ${habit.streak} days
+        </div>
+
+      </div>
+
+      <button class="delete" onclick="deleteHabit(${i})">×</button>
+
+    </div>
+
+  `).join("");
+
+}
+
+
+function addHabit() {
+
+  const input = document.getElementById("habitInput");
+
+  const name = input.value.trim();
+
+  if (!name) return;
+
+  data.habits.push({
+    name:name,
+    completed:false,
+    streak:0
+  });
+
+  input.value="";
+
+  save();
+  render();
+
+}
+
+
+function deleteHabit(i) {
+
+  data.habits.splice(i,1);
+
+  save();
+  render();
+
+}
+
+
+function toggleHabit(i) {
+
+  data.habits[i].completed = !data.habits[i].completed;
+
+  if (data.habits[i].completed) {
+    data.habits[i].streak++;
+  }
+
+  save();
+  render();
+
+}
+
+
+function addPlannedTask() {
+
+  const title = document.getElementById("planTask").value.trim();
+
+  const time = document.getElementById("planTime").value;
+
+  const priority = document.getElementById("planPriority").value;
+
+  if (!title) return;
+
+  data.tasks.push({
+    title:title,
+    time:time,
+    priority:priority,
+    completed:false
+  });
+
+  document.getElementById("planTask").value="";
+
+  save();
+  render();
+
+}
+
+
+function renderTimeline() {
+
+  const timeline = document.getElementById("timeline");
+
+  const sorted = [...data.tasks].sort((a,b)=>
+    (a.time || "99:99").localeCompare(b.time || "99:99")
+  );
+
+  timeline.innerHTML = sorted.map(task=>`
+
+    <div class="timeline-item">
+
+      <strong>${task.time || "Anytime"}</strong>
+
+      <div>${task.title}</div>
+
+      <small>${task.priority}</small>
+
+    </div>
+
+  `).join("");
+
+}
+
+
+function calculateProgress() {
+
+  const total = data.tasks.length + data.habits.length;
+
+  if (!total) return 0;
+
+  const completed =
+    data.tasks.filter(t=>t.completed).length +
+    data.habits.filter(h=>h.completed).length;
+
+  return Math.round((completed / total) * 100);
+
+}
+
+
+function updateProgress() {
+
+  const percentage = calculateProgress();
+
+  document.getElementById("progressFill").style.width =
+    percentage + "%";
+
+  document.getElementById("progressText").textContent =
+    percentage + "% complete";
+
+  document.getElementById("progressNumber").textContent =
+    percentage + "%";
+
+  document.getElementById("taskCount").textContent =
+    data.tasks.filter(t=>t.completed).length;
+
+  document.getElementById("habitCount").textContent =
+    data.habits.filter(h=>h.completed).length;
+
+}
+
+
+function showPage(page,button) {
+
+  document.querySelectorAll(".page").forEach(p=>{
+    p.classList.remove("active");
+  });
+
+  document.getElementById(page).classList.add("active");
+
+  document.querySelectorAll(".tabs button").forEach(b=>{
+    b.classList.remove("active");
+  });
+
+  button.classList.add("active");
+
+}
+
+
+function render() {
+
+  renderTasks();
+  renderHabits();
+  renderHabitPage();
+  renderTimeline();
+  updateProgress();
+
+  document.getElementById("oneWin").value = data.oneWin;
+
+}
+
+
+document.getElementById("oneWin").addEventListener("input",function(){
+
+  data.oneWin = this.value;
+
+  save();
+
+});
+
+
+render();
+
+</script>
+
+</body>
+</html>
